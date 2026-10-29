@@ -1,0 +1,98 @@
+/** Data-driven weapons and pickup defs. */
+export const WEAPONS = {
+  rifle: {
+    id: 'rifle',
+    name: 'Rifle',
+    fireRate: 0.22,
+    ammo: Infinity,
+    pellets: 1,
+    spread: 0.04,
+    speed: 310,
+    life: 0.85,
+    damage: 1,
+    radius: 2.2,
+    kind: 'bullet',
+    sfx: 'rifle',
+    tracer: '#ffe9a0',
+    unlimited: true,
+  },
+  spread: {
+    id: 'spread',
+    name: 'Spread Gun',
+    fireRate: 0.28,
+    ammo: 28,
+    pellets: 5,
+    spread: 0.42,
+    speed: 280,
+    life: 0.55,
+    damage: 1,
+    radius: 2.0,
+    kind: 'bullet',
+    sfx: 'spread',
+    tracer: '#ffd070',
+  },
+  mg: {
+    id: 'mg',
+    name: 'Machine Gun',
+    fireRate: 0.07,
+    ammo: 70,
+    pellets: 1,
+    spread: 0.1,
+    speed: 340,
+    life: 0.7,
+    damage: 1,
+    radius: 2.0,
+    kind: 'bullet',
+    sfx: 'mg',
+    tracer: '#fff4c0',
+  },
+  rocket: {
+    id: 'rocket',
+    name: 'Rocket',
+    fireRate: 0.55,
+    ammo: 8,
+    pellets: 1,
+    spread: 0,
+    speed: 170,
+    life: 1.4,
+    damage: 4,
+    radius: 3.4,
+    kind: 'rocket',
+    splash: 42,
+    sfx: 'rocket',
+    tracer: '#ffb060',
+    breaksCover: true,
+  },
+  flame: {
+    id: 'flame',
+    name: 'Flamethrower',
+    fireRate: 0.045,
+    ammo: 90,
+    pellets: 1,
+    spread: 0.18,
+    speed: 150,
+    life: 0.28,
+    damage: 1,
+    radius: 4.5,
+    kind: 'flame',
+    sfx: 'flame',
+    tracer: '#ff8020',
+  },
+};
+
+export const PICKUPS = {
+  spread: { id: 'spread', kind: 'weapon', weapon: 'spread', label: 'SPREAD', score: 50 },
+  mg: { id: 'mg', kind: 'weapon', weapon: 'mg', label: 'M.GUN', score: 50 },
+  rocket: { id: 'rocket', kind: 'weapon', weapon: 'rocket', label: 'ROCKET', score: 80 },
+  flame: { id: 'flame', kind: 'weapon', weapon: 'flame', label: 'FLAME', score: 50 },
+  grenades: { id: 'grenades', kind: 'grenades', amount: 3, label: '+3 GRENADES', score: 30 },
+  medal: { id: 'medal', kind: 'score', amount: 1000, label: '+1000', score: 1000 },
+  oneup: { id: 'oneup', kind: 'life', amount: 1, label: '1-UP', score: 0 },
+};
+
+export const WEAPON_IDS = Object.keys(WEAPONS);
+export const PICKUP_IDS = Object.keys(PICKUPS);
+
+export function getWeapon(id) {
+  return WEAPONS[id] || WEAPONS.rifle;
+}
