@@ -1,6 +1,6 @@
 /** HUD and overlay screens. */
-import { GAME_TITLE, rankFor, REDUCED_MOTION } from './config.js?v=1';
-import { isMuted, volumeIndex, isMusicOn } from './audio.js?v=1';
+import { GAME_TITLE, rankFor, REDUCED_MOTION } from './config.js?v=2';
+import { isMuted, volumeIndex, isMusicOn } from './audio.js?v=2';
 
 export function setScreen(name) {
   document.body.dataset.screen = name;

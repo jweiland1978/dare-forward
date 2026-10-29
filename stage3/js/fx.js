@@ -1,5 +1,5 @@
 /** Particles, explosions, shake, flash, decals. */
-import { PARTICLE_CAP, REDUCED_MOTION, clamp } from './config.js?v=1';
+import { PARTICLE_CAP, REDUCED_MOTION, clamp } from './config.js?v=2';
 
 const parts = [];
 const decals = [];

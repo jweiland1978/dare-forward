@@ -14,11 +14,11 @@ import {
   rankFor,
   TERRITORY_NAMES,
   dist2,
-} from './config.js?v=1';
-import { PALETTES, buildTerritory } from './territories.js?v=1';
-import { buildSprites } from './sprites.js?v=1';
-import { WEAPON_IDS, getWeapon } from './weapons.js?v=1';
-import { ENEMY_TYPE_IDS, createEnemy } from './enemies.js?v=1';
+} from './config.js?v=2';
+import { PALETTES, buildTerritory } from './territories.js?v=2';
+import { buildSprites } from './sprites.js?v=2';
+import { WEAPON_IDS, getWeapon } from './weapons.js?v=2';
+import { ENEMY_TYPE_IDS, createEnemy } from './enemies.js?v=2';
 import {
   createWorld,
   createPlayer,
@@ -42,7 +42,7 @@ import {
   tryExtract,
   extractNearPlayer,
   DEBRIS_COLOR,
-} from './entities.js?v=1';
+} from './entities.js?v=2';
 import {
   resetFx,
   updateFx,
@@ -60,16 +60,16 @@ import {
   shake,
   addFlash,
   floatingText,
-} from './fx.js?v=1';
+} from './fx.js?v=2';
 import {
   sfx,
   resume,
   hookFirstGesture,
   cycleVolume,
   toggleMusic,
-} from './audio.js?v=1';
-import { input, bindInput, isTouchDevice, consumePause, consumeMute } from './input.js?v=1';
-import { setScreen, updateHud, fillSecured, fillGameOver, fillComplete, setBestOnTitle } from './ui.js?v=1';
+} from './audio.js?v=2';
+import { input, bindInput, isTouchDevice, consumePause, consumeMute } from './input.js?v=2';
+import { setScreen, updateHud, fillSecured, fillGameOver, fillComplete, setBestOnTitle } from './ui.js?v=2';
 
 document.title = GAME_TITLE;
 const titleEl = document.getElementById('game-title');

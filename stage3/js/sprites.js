@@ -1,5 +1,5 @@
 /** Procedural pixel-art sprites, drawn to offscreen canvases at load. */
-import { mulberry32 } from './config.js?v=1';
+import { mulberry32 } from './config.js?v=2';
 
 function make(w, h, fn) {
   const c = document.createElement('canvas');

@@ -1,5 +1,5 @@
 /** Data-driven layouts. Four marches plus the short Iron Citadel approach. */
-import { WORLD_W, TERRITORY_NAMES } from './config.js?v=1';
+import { WORLD_W, TERRITORY_NAMES } from './config.js?v=2';
 
 export const PALETTES = [
   {

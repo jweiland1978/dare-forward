@@ -15,10 +15,10 @@ import {
   norm,
   facingName,
   circleRect,
-} from './config.js?v=1';
-import { WEAPONS, PICKUPS, getWeapon } from './weapons.js?v=1';
-import { ENEMY_TYPES, createEnemy, updateEnemy } from './enemies.js?v=1';
-import { SPRITES, unitSprite } from './sprites.js?v=1';
+} from './config.js?v=2';
+import { WEAPONS, PICKUPS, getWeapon } from './weapons.js?v=2';
+import { ENEMY_TYPES, createEnemy, updateEnemy } from './enemies.js?v=2';
+import { SPRITES, unitSprite } from './sprites.js?v=2';
 import {
   explode,
   muzzleFlash,
@@ -30,9 +30,9 @@ import {
   burstDebris,
   addFire,
   spawnParticle,
-} from './fx.js?v=1';
-import { sfx } from './audio.js?v=1';
-import { bossAimPoint, hitTestBoss, damageBossAt, damageBossExplosion } from './boss.js?v=1';
+} from './fx.js?v=2';
+import { sfx } from './audio.js?v=2';
+import { bossAimPoint, hitTestBoss, damageBossAt, damageBossExplosion } from './boss.js?v=2';
 
 export const COVER_DEFS = {
   sandbag: { hp: 4, w: 22, h: 12, blocksBullet: true, blocksWalk: true, onlyExplosive: false, r: 10 },

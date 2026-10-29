@@ -1,5 +1,5 @@
 /** Keyboard, mouse, touch stick + FIRE/GRENADE. Multi-touch by pointer id. */
-import { WORLD_W } from './config.js?v=1';
+import { WORLD_W } from './config.js?v=2';
 
 export const input = {
   ax: 0,

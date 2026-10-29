@@ -1,5 +1,5 @@
 /** Enemy types + state-machine AI. Data-driven. */
-import { dist2, norm, clamp, WORLD_W } from './config.js?v=1';
+import { dist2, norm, clamp, WORLD_W } from './config.js?v=2';
 
 export const ENEMY_TYPES = {
   rifleman: {

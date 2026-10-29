@@ -1,5 +1,5 @@
 /** Web Audio synth — no samples, iOS-resume on first gesture. */
-import { STORAGE_VOL, STORAGE_MUSIC } from './config.js?v=1';
+import { STORAGE_VOL, STORAGE_MUSIC } from './config.js?v=2';
 
 let ctx = null;
 let master = null;
@@ -7,7 +7,7 @@ let sfxGain = null;
 let musicGain = null;
 let started = false;
 let musicOn = true;
-let musicNodes = [];
+const liveVoices = new Set(); // every started source, for the safety cap
 let noiseBuf = null;
 
 const VOLS = [0, 0.28, 0.55, 1];
@@ -64,6 +64,7 @@ export function cycleVolume() {
   }
   applyVol();
   resume();
+  if (musicOn && volIndex > 0 && !musicPlaying) startMusic();
   return volIndex;
 }
 
@@ -106,6 +107,7 @@ function osc(type, freq, t) {
   const o = ctx.createOscillator();
   o.type = type;
   o.frequency.setValueAtTime(freq, t);
+  trackVoice(o, null, t, null);
   return o;
 }
 
@@ -123,6 +125,7 @@ function noiseSrc(t) {
   s.buffer = getNoise();
   s.loop = true;
   s.start(t);
+  trackVoice(s, null, t, null);
   return s;
 }
 
@@ -323,73 +326,171 @@ export function sfx(name) {
   fireSfx(name);
 }
 
-function stopMusic() {
-  for (const n of musicNodes) {
+/* ---------------------------------------------------------------------------
+ * Music + drone: short, self-stopping notes scheduled against the AudioContext
+ * clock with a small lookahead. No oscillator ever plays longer than one note,
+ * so nothing can "hang" if timers are throttled or the tab/phone pauses.
+ * ------------------------------------------------------------------------- */
+const MUSIC_STEP = 0.14; // seconds per lead step (bass changes every 2 steps)
+const LOOKAHEAD = 0.25; // schedule this far ahead of ctx.currentTime
+const VOICE_CAP = 3.0; // safety: kill any source older than this (seconds)
+const BASS = [98, 98, 110, 98, 87, 87, 98, 110];
+const LEAD = [196, 0, 233, 196, 174, 0, 196, 233, 262, 0, 233, 196];
+let musicPlaying = false;
+let droneOn = false;
+let nextMusicT = 0;
+let musicStep = 0;
+let nextDroneT = 0;
+let schedId = null;
+const musicVoices = new Set();
+
+function trackVoice(src, gainNode, t, set) {
+  const v = { src, g: gainNode, t0: t };
+  liveVoices.add(v);
+  if (set) set.add(v);
+  src.onended = () => {
+    liveVoices.delete(v);
+    if (set) set.delete(v);
     try {
-      n.stop();
+      src.disconnect();
+      if (gainNode) gainNode.disconnect();
+    } catch {
+      /* ignore */
+    }
+  };
+  return v;
+}
+
+function killVoice(v, now) {
+  try {
+    if (v.g) {
+      v.g.gain.cancelScheduledValues(now);
+      v.g.gain.setValueAtTime(0.0001, now);
+    }
+    v.src.stop(now + 0.02);
+  } catch {
+    /* already stopped */
+  }
+  liveVoices.delete(v);
+}
+
+/** One enveloped note that always stops on its own. */
+function note(type, f, t, dur, peak, dest, filterHz, set) {
+  const o = ctx.createOscillator();
+  o.type = type;
+  o.frequency.setValueAtTime(f, t);
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(peak, t + Math.min(0.012, dur * 0.25));
+  g.gain.setValueAtTime(peak, t + dur * 0.7);
+  g.gain.linearRampToValueAtTime(0, t + dur);
+  if (filterHz) {
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = filterHz;
+    o.connect(lp);
+    lp.connect(g);
+  } else o.connect(g);
+  g.connect(dest);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+  trackVoice(o, g, t, set);
+}
+
+function scheduleMusicStep(t, i) {
+  const lf = LEAD[i % LEAD.length];
+  if (lf) note('square', lf, t, MUSIC_STEP * 0.85, 0.035, musicGain, 1200, musicVoices);
+  if (i % 2 === 0) note('triangle', BASS[(i / 2) % BASS.length], t, MUSIC_STEP * 1.9, 0.07, musicGain, 0, musicVoices);
+}
+
+function scheduleDroneSeg(t) {
+  // overlapping 1.2 s segments with soft edges = continuous engine rumble
+  const seg = 1.2;
+  note('sine', 42, t, seg, 0.07, sfxGain, 0, null);
+  note('triangle', 28, t, seg, 0.07, sfxGain, 140, null);
+}
+
+function audioTick() {
+  if (!ctx || ctx.state !== 'running') return;
+  const now = ctx.currentTime;
+  // safety cap: nothing may ring longer than a few seconds
+  for (const v of liveVoices) if (now - v.t0 > VOICE_CAP) killVoice(v, now);
+  if (musicPlaying) {
+    if (nextMusicT < now) nextMusicT = now + 0.03; // fell behind (throttled): skip, never burst
+    while (nextMusicT < now + LOOKAHEAD) {
+      scheduleMusicStep(nextMusicT, musicStep);
+      nextMusicT += MUSIC_STEP;
+      musicStep = (musicStep + 1) % 96;
+    }
+  }
+  if (droneOn) {
+    if (nextDroneT < now) nextDroneT = now + 0.03;
+    while (nextDroneT < now + LOOKAHEAD) {
+      scheduleDroneSeg(nextDroneT);
+      nextDroneT += 0.9;
+    }
+  }
+}
+
+function ensureScheduler() {
+  if (schedId == null) schedId = setInterval(audioTick, 50);
+}
+
+/** Low engine rumble while the war machine is alive. */
+export function setBossDrone(on) {
+  on = !!on && volIndex > 0;
+  if (on === droneOn) return;
+  droneOn = on;
+  if (on) {
+    try {
+      ac();
+      nextDroneT = 0;
+      ensureScheduler();
+      audioTick();
     } catch {
       /* ignore */
     }
   }
-  musicNodes = [];
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  for (const v of musicVoices) killVoice(v, now);
+  musicVoices.clear();
 }
 
 function startMusic() {
   ac();
   stopMusic();
   if (!musicOn || volIndex === 0) return;
-  const t0 = ctx.currentTime + 0.05;
-  const tempo = 0.28;
-  const bass = [98, 98, 110, 98, 87, 87, 98, 110];
-  const lead = [196, 0, 233, 196, 174, 0, 196, 233, 262, 0, 233, 196];
-
-  const dur = 32;
-  const o1 = osc('triangle', bass[0], t0);
-  const g1 = ctx.createGain();
-  g1.gain.value = 0.07;
-  o1.connect(g1);
-  g1.connect(musicGain);
-  o1.start(t0);
-  o1.stop(t0 + dur);
-  for (let i = 0; i < 64; i++) {
-    const f = bass[i % bass.length];
-    o1.frequency.setValueAtTime(f, t0 + i * tempo);
-  }
-
-  const o2 = osc('square', 196, t0);
-  const g2 = ctx.createGain();
-  g2.gain.value = 0.03;
-  const lp = ctx.createBiquadFilter();
-  lp.type = 'lowpass';
-  lp.frequency.value = 1200;
-  o2.connect(lp);
-  lp.connect(g2);
-  g2.connect(musicGain);
-  o2.start(t0);
-  o2.stop(t0 + dur);
-  for (let i = 0; i < 80; i++) {
-    const f = lead[i % lead.length];
-    const tm = t0 + i * tempo * 0.5;
-    o2.frequency.setValueAtTime(Math.max(f, 80), tm);
-    g2.gain.setValueAtTime(f ? 0.035 : 0.0001, tm);
-  }
-
-  musicNodes = [o1, o2];
-  // loop by restarting
-  const id = setTimeout(() => {
-    if (musicOn && volIndex > 0) startMusic();
-  }, dur * 1000 - 200);
-  musicNodes.push({ stop() { clearTimeout(id); } });
+  musicPlaying = true;
+  musicStep = 0;
+  nextMusicT = 0;
+  ensureScheduler();
+  audioTick();
 }
 
+let gestureHooked = false;
 export function hookFirstGesture() {
-  const once = () => {
-    resume();
-    window.removeEventListener('pointerdown', once, true);
-    window.removeEventListener('keydown', once, true);
-    window.removeEventListener('touchstart', once, true);
+  if (gestureHooked) return;
+  gestureHooked = true;
+  // First gesture unlocks audio; later gestures re-wake it if iOS suspended/interrupted it.
+  const wake = () => {
+    if (document.hidden) return;
+    if (!started) resume();
+    else if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
   };
-  window.addEventListener('pointerdown', once, true);
-  window.addEventListener('keydown', once, true);
-  window.addEventListener('touchstart', once, { capture: true, passive: true });
+  window.addEventListener('pointerdown', wake, true);
+  window.addEventListener('keydown', wake, true);
+  window.addEventListener('touchstart', wake, { capture: true, passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (!ctx) return;
+    if (document.hidden) {
+      ctx.suspend().catch(() => {});
+    } else if (started) {
+      ctx.resume().catch(() => {});
+    }
+  });
 }

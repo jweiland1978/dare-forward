@@ -1,5 +1,5 @@
 /** Data-driven layouts for 4 territories. Each is a full-length march. */
-import { WORLD_W, TERRITORY_NAMES } from './config.js?v=1';
+import { WORLD_W, TERRITORY_NAMES } from './config.js?v=2';
 
 export const PALETTES = [
   {

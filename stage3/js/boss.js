@@ -1,5 +1,5 @@
 /** The Bulwark — final war machine. Procedural pixel draw, no assets. */
-import { WORLD_W, clamp } from './config.js?v=1';
+import { WORLD_W, clamp } from './config.js?v=2';
 import {
   explode,
   shake,
@@ -8,8 +8,8 @@ import {
   floatingText,
   spawnParticle,
   hitSparks,
-} from './fx.js?v=1';
-import { sfx } from './audio.js?v=1';
+} from './fx.js?v=2';
+import { sfx } from './audio.js?v=2';
 
 const BOSS_W = 158;
 const BOSS_H = 66;
