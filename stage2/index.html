@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Dare Forward</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect fill='%238b1e3a' width='16' height='16'/></svg>">
+  <link rel="stylesheet" href="css/style.css?v=1">
+</head>
+<body data-screen="title">
+  <div id="app">
+    <header id="hud">
+      <div class="hud-brand">
+        <span class="hud-kicker">Field order</span>
+        <span class="hud-title" id="game-title">Dare Forward</span>
+      </div>
+      <div class="hud-mid">
+        <div class="hud-row">
+          <span data-testid="hud-score" id="hud-score">000000</span>
+          <span class="hud-lives" data-testid="hud-lives" id="hud-lives">♥♥♥</span>
+          <span class="hud-gren" data-testid="hud-grenades" id="hud-grenades">5</span>
+        </div>
+        <div class="hud-row">
+          <span id="hud-rank">Trooper</span>
+          <span class="hud-terr" data-testid="hud-territory" id="hud-territory">Oasis Cut</span>
+          <div class="hud-bar"><span id="hud-progress"></span></div>
+          <span class="hud-weapon" data-testid="hud-weapon" id="hud-weapon">Rifle</span>
+          <span id="hud-best">BEST 000000</span>
+        </div>
+      </div>
+      <div class="hud-btns">
+        <button type="button" class="icon-btn" data-testid="mute-btn" id="mute-btn" aria-label="Volume">🔉</button>
+        <button type="button" class="icon-btn" data-testid="pause-btn" id="pause-btn" aria-label="Pause">❚❚</button>
+      </div>
+    </header>
+
+    <div id="game-wrap">
+      <canvas id="game"></canvas>
+      <div id="hint">WASD / arrows move · Space / J fire · G / K grenade · P pause · M mute</div>
+      <div id="overlay">
+        <div class="screen" id="screen-title">
+          <div class="kicker">One rifle. Push north.</div>
+          <h1 id="title-heading">Dare Forward</h1>
+          <p>Take the four territories. Free the prisoners in blue and get them to a landing zone.</p>
+          <button type="button" class="btn" data-testid="play-btn" id="play-btn">Deploy</button>
+          <div class="diff-row" role="group" aria-label="Difficulty">
+            <button type="button" class="diff-btn" data-testid="diff-easy">Easy</button>
+            <button type="button" class="diff-btn" data-testid="diff-normal">Normal</button>
+            <button type="button" class="diff-btn" data-testid="diff-hard">Hard</button>
+          </div>
+          <button type="button" class="btn ghost" data-testid="howto-btn">How to Play</button>
+          <div class="note" id="title-best">BEST 000000</div>
+          <div class="note">Made with AI help</div>
+          <div class="note">Built with AI (Grok) and play-tested by BlueWater78</div>
+        </div>
+        <div class="screen" id="screen-pause" hidden>
+          <div class="kicker">Paused</div>
+          <h1>Hold fire</h1>
+          <button type="button" class="btn" data-testid="resume-btn" id="resume-btn">Resume</button>
+          <button type="button" class="btn ghost" data-testid="restart-btn" id="restart-btn">Restart</button>
+          <button type="button" class="btn ghost" data-testid="menu-btn" id="menu-btn">Menu</button>
+          <div class="diff-row" role="group" aria-label="Difficulty">
+            <button type="button" class="diff-btn" data-testid="diff-easy">Easy</button>
+            <button type="button" class="diff-btn" data-testid="diff-normal">Normal</button>
+            <button type="button" class="diff-btn" data-testid="diff-hard">Hard</button>
+          </div>
+          <p class="note">Difficulty changes the fight now. Lives and grenades apply on the next deploy.</p>
+          <button type="button" class="btn ghost" data-testid="howto-btn">How to Play</button>
+          <div><button type="button" class="btn ghost" id="music-btn">Music: On</button></div>
+        </div>
+        <div class="screen screen-howto" id="screen-howto" data-testid="howto-screen" hidden>
+          <button type="button" class="btn ghost" data-testid="howto-back-btn" id="howto-back-btn">Back</button>
+          <div class="kicker">Field notes</div>
+          <h1>How to Play</h1>
+          <h2>Goal</h2>
+          <p>Push north and secure four territories: Oasis Cut, Walled Mile, Blackwater Span, and The Redoubt. Free every prisoner in blue and walk them into a marked landing zone.</p>
+          <h2>Touch</h2>
+          <p>Stick moves. Hold FIRE to shoot the way you are heading — nearby enemies in that cone are aimed for you. GRENADE throws one grenade.</p>
+          <h2>Keyboard and mouse</h2>
+          <p>WASD or arrow keys move. You fire the way you face. Hold Space or J to shoot. G or K throws a grenade. Hold the mouse button to aim that shot. P pauses. M cycles the volume.</p>
+          <h2>Weapons</h2>
+          <div class="howto-row"><canvas class="mini" data-icon="rifle" width="36" height="36"></canvas><span>Rifle — always with you. Steady shots.</span></div>
+          <div class="howto-row"><canvas class="mini" data-icon="spread" width="36" height="36"></canvas><span>Spread — a wide fan. Good up close.</span></div>
+          <div class="howto-row"><canvas class="mini" data-icon="mg" width="36" height="36"></canvas><span>Machine gun — fast, hungry for ammo.</span></div>
+          <div class="howto-row"><canvas class="mini" data-icon="rocket" width="36" height="36"></canvas><span>Rocket — blows cover, nests, and bunkers.</span></div>
+          <div class="howto-row"><canvas class="mini" data-icon="flame" width="36" height="36"></canvas><span>Flame — a short cone of fire.</span></div>
+          <div class="howto-row"><canvas class="mini" data-icon="grenades" width="36" height="36"></canvas><span>Grenades — arcing blasts. Your own will kill you.</span></div>
+          <h2>Cover</h2>
+          <p>Sandbags and crates stop rifle fire. Grenades and rockets break them. Barrels explode, and a chain of them slows time. Walls and buildings block your path. Tank traps stop you; bullets pass. Barbed wire and mud slow your walk. Only bridges cross water.</p>
+          <h2>Enemies</h2>
+          <p>Flank gun nests. Bunkers shrug off frontal fire — use explosives, or shoot in through the open back. Mortars paint a red circle: leave it. Shoot the tank on a flamer’s back to burst him. Rooftop snipers show a red laser before they fire. Trucks drop a squad unless you wreck them first.</p>
+          <h2>Prisoners</h2>
+          <p>Walk into a prisoner to free them. They follow you. They can be shot or caught in a blast, and they do not stop bullets. Lead them into a landing zone, or bring them through the gate, for an extraction bonus.</p>
+          <h2>Difficulty</h2>
+          <p>Easy, Normal, or Hard. The choice is remembered on this device. Lives and starting grenades change the next time you deploy. Easy is built for a casual push. Hard shoots sooner and straighter.</p>
+          <button type="button" class="btn ghost howto-back">Back</button>
+        </div>
+        <div class="screen" id="screen-secured" hidden>
+          <div class="kicker">Territory secured</div>
+          <h1 id="secured-name">Oasis Cut</h1>
+          <div class="tally" id="secured-tally"></div>
+          <button type="button" class="btn" data-testid="continue-btn" id="continue-btn">Continue</button>
+        </div>
+        <div class="screen" id="screen-gameover" hidden>
+          <div class="kicker">Fallen</div>
+          <h1>Game Over</h1>
+          <div class="tally" id="gameover-tally"></div>
+          <button type="button" class="btn" data-testid="retry-btn" id="retry-btn">Retry</button>
+          <button type="button" class="btn ghost" id="go-menu-btn" data-testid="menu-btn">Menu</button>
+        </div>
+        <div class="screen" id="screen-complete" hidden>
+          <div class="kicker">Campaign complete</div>
+          <h1>Final assault coming soon</h1>
+          <p>The four territories are yours. A last stand waits beyond the gate.</p>
+          <div class="tally" id="complete-tally"></div>
+          <button type="button" class="btn" id="complete-menu-btn" data-testid="menu-btn">Menu</button>
+        </div>
+      </div>
+    </div>
+    <div id="controls">
+      <div id="stick-zone" data-testid="stick-zone">
+        <div class="stick-ring"><div class="stick-knob"></div></div>
+      </div>
+      <div id="btn-cluster">
+        <button type="button" class="ctrl-btn fire" data-testid="fire-btn" id="fire-btn">FIRE</button>
+        <button type="button" class="ctrl-btn" data-testid="grenade-btn" id="grenade-btn">GRENADE</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="js/main.js?v=1"></script>
+</body>
+</html>
